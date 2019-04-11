@@ -67,9 +67,59 @@ public abstract class Critter {
     	// steps = true  (2)
     	// direction: 0 - 7
     	
+    	setEnergy(getEnergy() - Params.LOOK_ENERGY_COST);
     	
+    	int stepSize = 1;
+    	if(steps) {
+    		stepSize = 2;
+    	}
     	
-        return "";
+    	int x_coord = getX_coord();
+		int y_coord = getY_coord();
+		switch(direction) {
+			case 0: //(0,1)
+	            x_coord=(x_coord+stepSize) % Params.WORLD_WIDTH;
+	            //y_coord = (y_coord+0) % Params.WORLD_HEIGHT;
+	            break;
+	        case 1: //(-1,1)
+	            x_coord = (x_coord+stepSize) % Params.WORLD_WIDTH;
+	            y_coord = (y_coord-stepSize) % Params.WORLD_HEIGHT;
+	            if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT; }
+	            break;
+	        case 2: //(-1,0)
+	            //x_coord = (x_coord-0) % Params.WORLD_WIDTH;
+	            y_coord=(y_coord-stepSize) % Params.WORLD_HEIGHT;
+	            if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT; }
+	            break;
+	        case 3: //(-1,-1)
+	            x_coord = (x_coord-stepSize) % Params.WORLD_WIDTH;
+	            y_coord = (y_coord-stepSize) % Params.WORLD_HEIGHT;
+	            if(x_coord < 0) { x_coord += Params.WORLD_WIDTH; }
+	            if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT;  }
+	            break;
+	        case 4: //(0,-1)
+	            x_coord=(x_coord-stepSize) % Params.WORLD_WIDTH;
+	            //y_coord = (y_coord+0) % Params.WORLD_HEIGHT;
+	            if(x_coord < 0) { x_coord += Params.WORLD_WIDTH;  }
+	            break;
+	        case 5: //(1,-1)
+	            x_coord = (x_coord-stepSize) % Params.WORLD_WIDTH;
+	            y_coord = (y_coord+stepSize) % Params.WORLD_HEIGHT;
+	            if(x_coord < 0) { x_coord += Params.WORLD_WIDTH;  }
+	            break;
+	        case 6: //(1,0)
+	            //x_coord = (x_coord+0) % Params.WORLD_WIDTH;
+	            y_coord=(y_coord+stepSize) % Params.WORLD_HEIGHT;
+	            break;
+	        case 7: //(1,1)
+	            x_coord = (x_coord+stepSize) % Params.WORLD_WIDTH;
+	            y_coord = (y_coord+stepSize) % Params.WORLD_HEIGHT;
+	            break;
+	        default:
+	            break;
+		}
+    	
+		return world.getGrid()[y_coord][x_coord];
     }
 
     public static String runStats(List<Critter> critters) {
@@ -80,6 +130,7 @@ public abstract class Critter {
 
     public static void displayWorld(Object pane) {
         // TODO Implement this method
+    	
     }
 
 	/* END --- NEW FOR PROJECT 5
@@ -317,6 +368,25 @@ public abstract class Critter {
     protected int getEnergy() {
         return energy;
     }
+    
+    /**
+     * sets the critter's x coordinate
+     * 
+     * @param x
+     */
+	protected void setX_coord(int x) {
+		x_coord = x;
+	}
+	
+	
+	/**
+	 * sets the critter's y coordinate
+	 * 
+	 * @param y
+	 */
+	protected void setY_coord(int y) {
+		y_coord = y;
+	}
 
     
     /**
@@ -384,17 +454,141 @@ public abstract class Critter {
     	encounters = e;
     }
 
+    /**
+     * checks to see if adjacent cells for walk or run are empty
+     * 
+     * @param crit		critter object
+     * @param dir		direction (0-7) critter wants to move in
+     * @param stepSize	how many steps critter wants to move (1 for walk; 2 for run)
+     * @return			boolean
+     */
+    protected boolean adjacentEmpty(Critter crit, int dir, int stepSize) {
+    	return world.isAdjacentEmpty(crit, dir, stepSize);
+    }
+    
+    /**
+     * critter uses energy to move one step in a direction on the grid
+     * 
+     * @param direction	direction (0-7) critter wants to move in
+     */
     protected final void walk(int direction) {
-        // TODO: Complete this method
+    	move(direction, 1);
+    	if(moved) {
+    		setEnergy(getEnergy() - Params.WALK_ENERGY_COST);
+    	}  	
     }
 
+    /**
+     * critter uses energy to move two steps in a direction on the grid
+     * 
+     * @param direction	direction (0-7) critter wants to move in
+     */
     protected final void run(int direction) {
-        // TODO: Complete this method
+    	move(direction, 2);
+        if(moved)
+            setEnergy(getEnergy() - Params.RUN_ENERGY_COST);
 
     }
 
+    /**
+     * if critter has not moved, it will move in the desired direction.
+     * if critter has moved already (from doTimeStep() or fight()) critter will not be able to move
+     * but will be penalized for trying to move.
+     * if critter is in an encounter (encounters) and the desired cell the critter wants to move to
+     * is not empty, the critter will not move and will be penalized for trying to move. 
+     * 
+     * @param direction direction (0-7) critter wants to move in
+     * @param stepSize	how many steps critter wants to move (1 for walk; 2 for run)
+     */
+    protected final void move(int direction, int stepSize){
+        
+    	if(encounters && !moved) {
+    		if(!world.isAdjacentEmpty(this, direction, stepSize)) {
+    			if(stepSize == 1) {
+    				setEnergy(getEnergy() - Params.WALK_ENERGY_COST);
+    			}
+    			else {
+    				setEnergy(getEnergy() - Params.RUN_ENERGY_COST);
+    			}
+    			return;
+    		}
+    	}
+    	
+    	
+    	if (!moved){
+            switch(direction) {
+                //(row, column)
+                //( y ,   x   )
+                case 0: //(0,1)
+                    x_coord=(x_coord+stepSize) % Params.WORLD_WIDTH;
+                    //y_coord = (y_coord+0) % Params.WORLD_HEIGHT;
+                    moved = true;
+                    break;
+                case 1: //(-1,1)
+                    x_coord = (x_coord+stepSize) % Params.WORLD_WIDTH;
+                    y_coord = (y_coord-stepSize) % Params.WORLD_HEIGHT;
+                    if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT; }
+                    moved = true;
+                    break;
+                case 2: //(-1,0)
+                    //x_coord = (x_coord-0) % Params.WORLD_WIDTH;
+                    y_coord=(y_coord-stepSize) % Params.WORLD_HEIGHT;
+                    if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT; }
+                    moved = true;
+                    break;
+                case 3: //(-1,-1)
+                    x_coord = (x_coord-stepSize) % Params.WORLD_WIDTH;
+                    y_coord = (y_coord-stepSize) % Params.WORLD_HEIGHT;
+                    if(x_coord < 0) { x_coord += Params.WORLD_WIDTH; }
+                    if(y_coord < 0) { y_coord += Params.WORLD_HEIGHT;  }
+                    moved = true;
+                    break;
+                case 4: //(0,-1)
+                    x_coord=(x_coord-stepSize) % Params.WORLD_WIDTH;
+                    //y_coord = (y_coord+0) % Params.WORLD_HEIGHT;
+                    if(x_coord < 0) { x_coord += Params.WORLD_WIDTH;  }
+                    moved = true;
+                    break;
+                case 5: //(1,-1)
+                    x_coord = (x_coord-stepSize) % Params.WORLD_WIDTH;
+                    y_coord = (y_coord+stepSize) % Params.WORLD_HEIGHT;
+                    if(x_coord < 0) { x_coord += Params.WORLD_WIDTH;  }
+                    moved = true;
+                    break;
+                case 6: //(1,0)
+                    //x_coord = (x_coord+0) % Params.WORLD_WIDTH;
+                    y_coord=(y_coord+stepSize) % Params.WORLD_HEIGHT;
+                    moved = true;
+                    break;
+                case 7: //(1,1)
+                    x_coord = (x_coord+stepSize) % Params.WORLD_WIDTH;
+                    y_coord = (y_coord+stepSize) % Params.WORLD_HEIGHT;
+                    moved = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    
+    /**
+     * if critter has sufficient energy, it will initialize its offspring and 
+     * add it to babies
+     * 
+     * @param offspring	new critter created by the parent critter
+     * @param direction	direction adjacent to parent critter that the offspring will be placed in
+     */
     protected final void reproduce(Critter offspring, int direction) {
-        // TODO: Complete this method
+        if ((energy < Params.MIN_REPRODUCE_ENERGY) || !alive){
+            return;
+        }
+        offspring.energy = energy/2;
+        energy = (int)Math.ceil(energy/2);
+        offspring.x_coord = x_coord;
+        offspring.y_coord = y_coord;
+        offspring.walk(direction);
+        world.getBabies().add(offspring);
     }
 
     /**

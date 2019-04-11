@@ -66,15 +66,6 @@ public class CritterWorld {
 		}	
 	}
 
-	/**
-	 * Adds critter to the grid
-	 * @param x
-	 * @param y
-	 * @param critter_toString
-	 */
-	public void addCritterToGrid(int x, int y, String critter_toString) {
-		grid[x][y] = critter_toString;
-	}
 
 	/**
 	 * Getter for grid
@@ -148,7 +139,7 @@ public class CritterWorld {
 	 * @return
 	 */
 	protected boolean isXYEmpty(Critter crit, int x_coord, int y_coord){
-		if (grid[y_coord][x_coord] == " " || grid[y_coord][x_coord] == null){
+		if (grid[y_coord][x_coord] == null){
 			return true;
 		} else {
 			return false;
@@ -176,7 +167,7 @@ public class CritterWorld {
 	public void clearGrid() {
 		for(int i=0; i<Params.WORLD_WIDTH; i++) {
 			for(int j=0; j<Params.WORLD_HEIGHT; j++)
-				grid[j][i] = " ";
+				grid[j][i] = null;
 		}
 	}
 
