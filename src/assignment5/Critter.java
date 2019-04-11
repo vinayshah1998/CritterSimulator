@@ -2,12 +2,12 @@
  * CRITTERS Critter.java
  * EE422C Project 5 submission by
  * Replace <...> with your actual data.
- * <Student1 Name>
- * <Student1 EID>
- * <Student1 5-digit Unique No.>
- * <Student2 Name>
- * <Student2 EID>
- * <Student2 5-digit Unique No.>
+ * Vinay Shah
+ * vss452
+ * 16205
+ * Vignesh Ravi
+ * vgr325
+ * 16225
  * Slip days used: <0>
  * Spring 2019
  */
@@ -63,6 +63,12 @@ public abstract class Critter {
     public abstract CritterShape viewShape();
 
     protected final String look(int direction, boolean steps) {
+    	// steps = false (1)
+    	// steps = true  (2)
+    	// direction: 0 - 7
+    	
+    	
+    	
         return "";
     }
 
@@ -84,9 +90,21 @@ public abstract class Critter {
     private int x_coord;
     private int y_coord;
 
-    private static List<Critter> population = new ArrayList<Critter>();
-    private static List<Critter> babies = new ArrayList<Critter>();
+    private boolean moved = true;
+    private static int timestep = 0;
+    private boolean alive;
+    private boolean encounters;
 
+//    private static List<Critter> population = new ArrayList<Critter>();
+//    private static List<Critter> babies = new ArrayList<Critter>();
+
+    public static CritterWorld world = new CritterWorld();
+    
+    // Initialize world/grid that will hold all alive critters
+    public static void initializeWorld(){
+        world = new CritterWorld();
+    }
+    
     /* Gets the package name.  This assumes that Critter and its
      * subclasses are all in the same package. */
     private static String myPackage;
@@ -104,6 +122,17 @@ public abstract class Critter {
     public static void setSeed(long new_seed) {
         rand = new Random(new_seed);
     }
+    
+    /** 
+     *  initialize private variables
+     */
+    protected void initializeCritter() {
+    	energy = Params.START_ENERGY;
+    	x_coord = getRandomInt(Params.WORLD_WIDTH);
+    	y_coord = getRandomInt(Params.WORLD_HEIGHT);
+    	alive = true;
+    	moved = false;
+    }
 
     /**
      * create and initialize a Critter subclass.
@@ -117,7 +146,46 @@ public abstract class Critter {
     public static void createCritter(String critter_class_name)
             throws InvalidCritterException {
         // TODO: Complete this method
+    	String newCritClassName = myPackage + "." + critter_class_name; 
+    	try {
+    		Object critter = Class.forName(newCritClassName).newInstance();
+    		if (!(critter instanceof Critter)){
+    		    throw new InvalidCritterException(newCritClassName);
+            }
+            ((Critter) critter).initializeCritter();
+    		world.addCritterToCollection((Critter)critter);
+    	}catch(ClassNotFoundException | InstantiationException | IllegalAccessException | NoClassDefFoundError ex) {
+    		throw new InvalidCritterException(newCritClassName);
+    	}
     }
+    
+    /**
+     * create and initialize a Critter subclass.
+     * critter_class_name must be the qualified name of a concrete subclass of Critter, if not,
+     * an InvalidCritterException must be thrown.
+     *
+     * @param critter_class_name
+     * @throws InvalidCritterException
+     */
+    public static void createBabies(String critter_class_name) throws InvalidCritterException {
+    	String newCritClassName = myPackage + "." + critter_class_name; 
+    	try {
+    		Class<?> critter = Class.forName(newCritClassName); 
+    		
+        	switch(critter_class_name) {
+        	case "Clover":
+        		Clover clover = (Clover) critter.newInstance(); 
+                clover.initializeCritter();
+                world.getBabies().add(clover);
+        		break;
+        	default:
+        		break;
+        	}	
+    	}catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    		throw new InvalidCritterException(newCritClassName);
+    	} 	   	
+    }
+    
 
     /**
      * Gets a list of critters of a specific type.
@@ -129,19 +197,97 @@ public abstract class Critter {
      */
     public static List<Critter> getInstances(String critter_class_name)
             throws InvalidCritterException {
-        // TODO: Complete this method
-        return null;
+        String newCritClassName = myPackage + "." + critter_class_name;
+        List<Critter> instances = new ArrayList<>();
+        try {
+            Class<?> critter = Class.forName(newCritClassName);
+            for (Critter crit : world.getPopulation()){
+                if (critter.isInstance(crit)){
+                    instances.add(crit);
+                }
+            }
+        }catch(ClassNotFoundException ex) {
+            throw new InvalidCritterException(newCritClassName);
+        }
+        return instances;
     }
 
     /**
      * Clear the world of all critters, dead and alive
      */
     public static void clearWorld() {
-        // TODO: Complete this method
+    	world.clear();
     }
 
+    /**
+     * 1) increment timestep
+     * 2) reset moved field for all critters to false
+     * 3) doTimeStep for all critters in the population
+     * 4) evaluate encounters and remove dead critters
+     * 5) subtract rest energy from all critters
+     * 6) refresh the clover population and add them to babies
+     * 7) update the grid
+     * 8) add all babies to population
+     */
     public static void worldTimeStep() {
-        // TODO: Complete this method
+        //increment timestep
+        timestep++;
+
+        //reset critter's moved fields to false
+        world.resetMovement();
+
+        //do time step method for all critters in population
+    	for(Critter crit : world.getPopulation()) {
+    		crit.doTimeStep();
+    	}
+        
+    	world.doEncounters();
+    	world.removeDeadCritters();
+    	
+        for(Critter crit : world.getPopulation()) {
+    		//crit.subEnergy(Params.REST_ENERGY_COST);
+    		crit.setEnergy(crit.energy - Params.REST_ENERGY_COST);
+    	}
+        
+        for(int i=0; i<Params.REFRESH_CLOVER_COUNT; i++) {
+        	try {
+				createBabies("Clover");
+			} catch (InvalidCritterException e) {}
+        }
+        
+        world.updateGrid();
+        
+        //then add babies to main population
+        world.getPopulation().addAll(world.getBabies());
+        //then clear babies collection
+        world.getBabies().clear();
+    }
+    
+    /**
+     * helper function for displayWorld()
+     */
+    private static void printTopBottom() {
+    	System.out.print("+");
+    	for(int i=0; i<Params.WORLD_WIDTH; i++)
+    		System.out.print("-");
+    	System.out.print("+");
+    	System.out.println();
+    }
+    
+    
+    /**
+     * prints boarder and grid to consol
+     */
+    public static void displayWorld() {
+        world.updateGrid();
+    	printTopBottom();
+    	for(int i=0; i<Params.WORLD_HEIGHT; i++) {
+    		System.out.print("|");
+    		world.printGridLine(i);
+    		System.out.print("|");
+    		System.out.println();
+    	}
+    	printTopBottom();
     }
 
     public abstract void doTimeStep();
@@ -153,9 +299,89 @@ public abstract class Critter {
     public String toString() {
         return "";
     }
-
+    
+    
+//    /**
+//     * subtract energy from critter
+//     * @param energy_cost
+//     */
+//    protected void subEnergy(int energy_cost) {
+//    	energy -= energy_cost;
+//    }
+    
+    
+    /**
+     * returns energy of critter
+     * @return
+     */
     protected int getEnergy() {
         return energy;
+    }
+
+    
+    /**
+     * sets new energy level for critter
+     * @param new_energy
+     */
+    protected void setEnergy(int new_energy) {
+        energy = new_energy;
+    }
+
+    
+    /**
+     * returns the critter's x coordinate 
+     * @return
+     */
+    protected int getX_coord() {
+        return x_coord;
+    }
+
+    
+    /**
+     * returns the critter's y coordinate
+     * @return
+     */
+    protected int getY_coord() {
+        return y_coord;
+    }
+
+    
+    /**
+     * sets move field of critter
+     * @param moved
+     */
+    public void setMoved(boolean moved) {
+        this.moved = moved;
+    }
+    
+    
+    /**
+     * checks if critter is alive
+     * @return
+     */
+    protected boolean isAlive() {
+    	if (getEnergy() <= 0){
+    	    alive = false;
+        }
+        return alive;
+    }
+
+    
+    /**
+     * sets alive field of critter
+     * @param life
+     */
+    protected void setAlive(boolean life){
+        alive = life;
+    }
+    
+    
+    /**
+     * sets encounter field of critter
+     * @param e
+     */
+    protected void setEncounters(boolean e) {
+    	encounters = e;
     }
 
     protected final void walk(int direction) {
@@ -212,8 +438,8 @@ public abstract class Critter {
          * provided in the starter code.  In any case, it has to be
          * implemented for grading tests to work.
          */
-        protected static List<Critter> getPopulation() {
-            return population;
+        protected static ArrayList<Critter> getPopulation() {
+            return new ArrayList<Critter>(world.getPopulation());
         }
 
         /**
@@ -225,7 +451,7 @@ public abstract class Critter {
          * every timestep.
          */
         protected static List<Critter> getBabies() {
-            return babies;
+            return new ArrayList<Critter>(world.getBabies());
         }
     }
 }
