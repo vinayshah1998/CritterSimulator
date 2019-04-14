@@ -83,9 +83,15 @@ public abstract class Critter {
     	if(steps) {
     		stepSize = 2;
     	}
-    	
-    	int x_coord = getX_coord();
-		int y_coord = getY_coord();
+
+        int x_coord = getX_coord();
+        int y_coord = getY_coord();
+
+    	if (!encounters){
+            x_coord = getPrevx_coord();
+            y_coord = getPrevy_coord();
+        }
+
 		switch(direction) {
 			case 0: //(0,1)
 	            x_coord=(x_coord+stepSize) % Params.WORLD_WIDTH;
@@ -128,8 +134,17 @@ public abstract class Critter {
 	        default:
 	            break;
 		}
-    	
-		return world.getGrid()[y_coord][x_coord];
+
+    	if(!encounters){
+            return world.getGrid()[y_coord][x_coord];
+        }
+
+    	for (Critter crit : world.getPopulation()){
+    	    if((crit.getX_coord() == x_coord) && (crit.getY_coord() == y_coord)){
+    	        return crit.toString();
+            }
+        }
+    	return null;
     }
 
     public static String runStats(List<Critter> critters) {
@@ -154,6 +169,9 @@ public abstract class Critter {
 			rest is unchanged from Project 4 */
 
     private int energy = 0;
+
+    private int prevx_coord;
+    private int prevy_coord;
 
     private int x_coord;
     private int y_coord;
@@ -198,6 +216,8 @@ public abstract class Critter {
     	energy = Params.START_ENERGY;
     	x_coord = getRandomInt(Params.WORLD_WIDTH);
     	y_coord = getRandomInt(Params.WORLD_HEIGHT);
+        prevx_coord = x_coord;
+        prevy_coord = y_coord;
     	alive = true;
     	moved = false;
     }
@@ -405,7 +425,24 @@ public abstract class Critter {
 		y_coord = y;
 	}
 
-    
+    //TODO: Javadocs???
+    public int getPrevx_coord() {
+        return prevx_coord;
+    }
+
+    public void setPrevx_coord(int prevx_coord) {
+        this.prevx_coord = prevx_coord;
+    }
+
+    public int getPrevy_coord() {
+        return prevy_coord;
+    }
+
+    public void setPrevy_coord(int prevy_coord) {
+        this.prevy_coord = prevy_coord;
+    }
+
+
     /**
      * sets new energy level for critter
      * @param new_energy
@@ -533,6 +570,8 @@ public abstract class Critter {
     	
     	
     	if (!moved){
+    	    prevx_coord = x_coord;
+    	    prevy_coord = y_coord;
             switch(direction) {
                 //(row, column)
                 //( y ,   x   )

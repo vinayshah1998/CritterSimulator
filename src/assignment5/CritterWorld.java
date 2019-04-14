@@ -21,14 +21,12 @@ public class CritterWorld {
 	private String[][] grid;
 	private Set<Critter> population;
 	private Set<Critter> babies;
-	private Set<Critter> snapshotPopulation;
 	
 	
 	public CritterWorld() {
 		grid = new String[Params.WORLD_HEIGHT][Params.WORLD_WIDTH];
 		population = new HashSet<Critter>();
 		babies = new HashSet<Critter>();
-		snapshotPopulation = new HashSet<Critter>();
 	}
 
 
@@ -258,15 +256,4 @@ public class CritterWorld {
 			}
 		}
 	}
-
-
-	public Set<Critter> getSnapshotPopulation() {
-		return snapshotPopulation;
-	}
-
-
-	public void setSnapshotPopulation(Set<Critter> snapshotPopulation) {
-		this.snapshotPopulation = snapshotPopulation;
-	}
-	
 }
