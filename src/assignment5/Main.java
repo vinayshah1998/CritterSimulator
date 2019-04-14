@@ -11,12 +11,13 @@ import java.util.Scanner;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -54,29 +55,130 @@ public class Main extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
+		GridPane critterGrid = new GridPane();
+		BorderPane mainPane = new BorderPane();
+		VBox optionsPane = new VBox();
+
+
+
+		critterGrid.setGridLinesVisible(true);
+//		critterGrid.setHgap(8);
+//		critterGrid.setVgap(8);
+		critterGrid.setPadding(new Insets(5));
+
+		Label create = new Label("Create critter");
+		Label step = new Label("Number of timesteps");
+		Label stats = new Label("Statistics of critters");
+		Label seed = new Label("Random seed number");
+
+		//Textbox to enter number of steps
+		TextField stepBox = new TextField();
+		stepBox.setPromptText("number of timesteps");
+		stepBox.setOnAction(e -> {
+			try{
+				int stepNum = Integer.parseInt(stepBox.getText());
+				if (stepNum <= 0){
+					throw new NumberFormatException();
+				}
+				for (int i = 0; i < stepNum; i++){
+					Critter.worldTimeStep();
+				}
+				System.out.println("Step number successfully set to: " + stepNum);
+			}catch(NumberFormatException ex){
+				Alert invalidStepNumber = new Alert(Alert.AlertType.ERROR);
+				invalidStepNumber.setTitle("Error Dialog");
+				invalidStepNumber.setHeaderText("You typed in an invalid step number!!");
+				invalidStepNumber.setContentText("Enter in a valid non-negative integer");
+
+				invalidStepNumber.showAndWait();
+			}
+		});
+
+		//Textbox to enter seed number
+		TextField seedBox = new TextField();
+		seedBox.setPromptText("seed number");
+		seedBox.setOnAction(e -> {
+			try{
+				int seedNum = Integer.parseInt(seedBox.getText());
+				if (seedNum < 0){
+					throw new NumberFormatException();
+				}
+				Critter.setSeed(seedNum);
+				System.out.println("Seed successfully set to: " + seedNum);
+			}catch(NumberFormatException ex){
+				Alert invalidSeed = new Alert(Alert.AlertType.ERROR);
+				invalidSeed.setTitle("Error Dialog");
+				invalidSeed.setHeaderText("You typed in an invalid seed number!!");
+				invalidSeed.setContentText("Enter in a valid non-negative integer");
+
+				invalidSeed.showAndWait();
+			}
+		});
+
+		//Clear button
+		Button clear = new Button("Clear");
+		clear.setOnAction(e -> {
+			System.out.println("Clearing world!");
+			Critter.clearWorld();
+		});
+
+		//Quit button
+		Button quit = new Button("Quit");
+		quit.setOnAction(e -> {
+			System.out.println("Ta-ta!");
+			stage.close();
+		});
+
+		optionsPane.setSpacing(8);
+		optionsPane.getChildren().addAll(create, step, stepBox, stats, seed, seedBox, clear, quit);
+
+		mainPane.setCenter(critterGrid);
+		mainPane.setLeft(optionsPane);
+
+//		for(int i=0; i<Params.WORLD_WIDTH; i++) {
+//			for(int j=0; j<Params.WORLD_HEIGHT; j++) {
+//			Shape s = new Rectangle(FACTOR,FACTOR);
+//			s.setFill(null);
+//			s.setStroke(Color.BLACK);
+//			gridPane.add(s, i, j);
+////		}
+//	}
+		Critter.displayWorld(critterGrid);
+
+
+
+		stage.setTitle("Critters");
+		stage.setScene(new Scene(mainPane, 500, 500));
+
+        stage.show();
+
+
+
+
+
 //    	kb = new Scanner(System.in); // use keyboard and console
 //    	
-    	Critter.initializeWorld();
+//    	Critter.initializeWorld();
 //    	Critter.worldTimeStep();
-    	
-    	gridPane = new GridPane();
-  	
-		for(int i=0; i<Params.WORLD_WIDTH; i++) {
-			for(int j=0; j<Params.WORLD_HEIGHT; j++) {
-				Shape s = new Rectangle(FACTOR,FACTOR);
-				s.setFill(null);
-				s.setStroke(Color.BLACK);
-				gridPane.add(s, i, j);
-			}
-		}
-		
-		Critter.displayWorld(gridPane);
-    	
-    	stage.setScene(new Scene(gridPane, STAGE_WIDTH+FACTOR, STAGE_HEIGHT+FACTOR));
-    	stage.show();
+//
+//    	gridPane = new GridPane();
+//
+//		for(int i=0; i<Params.WORLD_WIDTH; i++) {
+//			for(int j=0; j<Params.WORLD_HEIGHT; j++) {
+//				Shape s = new Rectangle(FACTOR,FACTOR);
+//				s.setFill(null);
+//				s.setStroke(Color.BLACK);
+//				gridPane.add(s, i, j);
+//			}
+//		}
+//
+//		Critter.displayWorld(gridPane);
+//
+//    	stage.setScene(new Scene(gridPane, STAGE_WIDTH+FACTOR, STAGE_HEIGHT+FACTOR));
+//    	stage.show();
     	
 //    	commandInterpreter(kb);
-//    	System.out.flush();    	
+//    	System.out.flush();
     }
 
     

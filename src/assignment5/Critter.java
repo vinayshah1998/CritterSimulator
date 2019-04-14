@@ -24,9 +24,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
+import javafx.scene.shape.*;
 
 /*
  * See the PDF for descriptions of the methods and fields in this
@@ -154,16 +152,61 @@ public abstract class Critter {
 
 
     public static void displayWorld(Object pane) throws Exception{
-        // TODO Implement this method
-    	for(int i=0; i<Params.WORLD_HEIGHT; i++) {
-    		for(int j=0; j<Params.WORLD_WIDTH; j++) {
-    			if(world.getGrid()[i][j] != null){
-    				Shape s = new Circle(Main.FACTOR/2);
-    				((GridPane) pane).add(s, j, i);
-    			}
-    		}
-    	}
+        for (Critter crit : world.getPopulation()){
+            Shape s = findShape(crit);
+            ((GridPane) pane).add(s, crit.getX_coord(), crit.getY_coord());
+        }
+
+
+
+
+//    	for(int i=0; i<Params.WORLD_HEIGHT; i++) {
+//    		for(int j=0; j<Params.WORLD_WIDTH; j++) {
+//    			if(world.getGrid()[i][j] != null){
+//    				Shape s = new Circle(Main.FACTOR/2);
+//    				((GridPane) pane).add(s, j, i);
+//    			}
+//    		}
+//    	}
     }
+
+    public static Shape findShape(Critter crit){
+        switch (crit.viewShape()){
+            case CIRCLE:
+                return new Circle(Main.FACTOR/2, crit.viewColor());
+            case SQUARE:
+                return new Rectangle(Main.FACTOR, Main.FACTOR, crit.viewColor());
+            case STAR:
+                Path star = new Path();
+                star.getElements().addAll(new MoveTo(0, 0),
+                        new LineTo(0, Main.FACTOR),
+                        new LineTo(Main.FACTOR/2, Main.FACTOR/2 * Math.sqrt(3)),
+                        new ClosePath(),
+                        new MoveTo(0, Main.FACTOR),
+                        new LineTo(Main.FACTOR, Main.FACTOR),
+                        new LineTo(Main.FACTOR/2, (Main.FACTOR - Main.FACTOR/2 * Math.sqrt(3))),
+                        new ClosePath());
+                return star;
+            case DIAMOND:
+                Path diamond = new Path();
+                diamond.getElements().addAll(new MoveTo(Main.FACTOR/2, 0),
+                        new LineTo(0, Main.FACTOR/2),
+                        new LineTo(Main.FACTOR/2, Main.FACTOR),
+                        new LineTo(Main.FACTOR, Main.FACTOR/2),
+                        new ClosePath());
+                return diamond;
+            case TRIANGLE:
+                Path triangle = new Path();
+                triangle.getElements().addAll(new MoveTo(0, 0),
+                        new LineTo(0, Main.FACTOR),
+                        new LineTo(Main.FACTOR/2, Main.FACTOR/2 * Math.sqrt(3)),
+                        new ClosePath());
+                return triangle;
+            default:
+                return null;
+        }
+    }
+
 
 	/* END --- NEW FOR PROJECT 5
 			rest is unchanged from Project 4 */
