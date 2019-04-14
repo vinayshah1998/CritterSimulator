@@ -1,16 +1,25 @@
 package assignment5;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -28,29 +37,49 @@ public class Main extends Application {
         myPackage = Critter.class.getPackage().toString().split(" ")[1];
     }
 
-    static GridPane gridPane;
-    
     /**
      * Main method.
      * @param args args can be empty.  If not empty, provide two parameters -- the first is a file name,
      * and the second is test (for test output, where all output to be directed to a String), or nothing.
      */
     public static void main(String[] args) {    	
-        // launch(args)
+    	launch(args);
     }
-    
-    @Override
-    public void init() {
 
-    }
+    
+    private static GridPane gridPane;
+    public static int FACTOR = 20;
+    public final int STAGE_WIDTH  = FACTOR * Params.WORLD_WIDTH;
+    public final int STAGE_HEIGHT = FACTOR * Params.WORLD_HEIGHT;
     
     @Override
     public void start(Stage stage) throws Exception {
+//    	kb = new Scanner(System.in); // use keyboard and console
+//    	
+    	Critter.initializeWorld();
+//    	Critter.worldTimeStep();
+    	
     	gridPane = new GridPane();
+  	
+		for(int i=0; i<Params.WORLD_WIDTH; i++) {
+			for(int j=0; j<Params.WORLD_HEIGHT; j++) {
+				Shape s = new Rectangle(FACTOR,FACTOR);
+				s.setFill(null);
+				s.setStroke(Color.BLACK);
+				gridPane.add(s, i, j);
+			}
+		}
+		
+		Critter.displayWorld(gridPane);
     	
+    	stage.setScene(new Scene(gridPane, STAGE_WIDTH+FACTOR, STAGE_HEIGHT+FACTOR));
+    	stage.show();
     	
+//    	commandInterpreter(kb);
+//    	System.out.flush();    	
     }
 
+    
     private static void commandInterpreter (Scanner kb) {
     	//TODO: create[class_name]
 		Critter.initializeWorld();
@@ -72,7 +101,7 @@ public class Main extends Application {
         		
         		case "show":
         			if (tokens.length == 1){
-						Critter.displayWorld();
+						Critter.displayWorld(gridPane);
 					} else {
 						System.out.println("error processing: " + nextline);
 					}
@@ -187,7 +216,10 @@ public class Main extends Application {
     		}
     		catch(InvalidCritterException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException a) {
     			System.out.println("error processing: " + nextline);
-    		}
+    		} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     		System.out.print("critters> ");
     	}	
     }

@@ -15,8 +15,18 @@
 package assignment5;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+
+import javafx.application.Application;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 
 /*
  * See the PDF for descriptions of the methods and fields in this
@@ -128,9 +138,16 @@ public abstract class Critter {
     }
 
 
-    public static void displayWorld(Object pane) {
+    public static void displayWorld(Object pane) throws Exception{
         // TODO Implement this method
-    	
+    	for(int i=0; i<Params.WORLD_HEIGHT; i++) {
+    		for(int j=0; j<Params.WORLD_WIDTH; j++) {
+    			if(world.getGrid()[i][j] != null){
+    				Shape s = new Circle(Main.FACTOR/2);
+    				((GridPane) pane).add(s, j, i);
+    			}
+    		}
+    	}
     }
 
 	/* END --- NEW FOR PROJECT 5
