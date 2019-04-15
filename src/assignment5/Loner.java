@@ -16,6 +16,8 @@ package assignment5;
 /* Likes to avoid everyone and stay alone in life
  */
 
+import javafx.scene.paint.Color;
+
 public class Loner extends Critter {
 
 	@Override
@@ -59,7 +61,8 @@ public class Loner extends Critter {
 	 * Simulates timestep for the Loner. Checks to see if there are more people around him than the limit.
 	 * If limit is exceeded, the Loner dies.
 	 */
-	public void doTimeStep() {		
+	public void doTimeStep() {
+		look(dir, true);
 		if(tooManyPeople() < myLimit) {
 			while(true) {
 				if(adjacentEmpty(this, dir, 1)) {
@@ -84,9 +87,19 @@ public class Loner extends Critter {
 		dir = Critter.getRandomInt(8);
 	}
 
+
 	@Override
 	public CritterShape viewShape() {
-		// TODO Auto-generated method stub
-		return null;
+		return CritterShape.TRIANGLE;
+	}
+
+	@Override
+	public javafx.scene.paint.Color viewColor() {
+		return Color.PINK;
+	}
+
+	@Override
+	public javafx.scene.paint.Color viewOutlineColor() {
+		return viewColor();
 	}
 }

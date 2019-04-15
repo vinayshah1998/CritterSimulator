@@ -18,6 +18,8 @@ package assignment5;
  * encounters (same location) to a random position on the board
  */
 
+import javafx.scene.paint.Color;
+
 public class Wizard extends Critter {
 	
 	@Override
@@ -63,9 +65,19 @@ public class Wizard extends Critter {
 		dir = Critter.getRandomInt(8);
 	}
 
+
 	@Override
 	public CritterShape viewShape() {
-		// TODO Auto-generated method stub
-		return null;
+		return CritterShape.CIRCLE;
+	}
+
+	@Override
+	public javafx.scene.paint.Color viewColor() {
+		return Color.RED;
+	}
+
+	@Override
+	public javafx.scene.paint.Color viewOutlineColor() {
+		return viewColor();
 	}
 }

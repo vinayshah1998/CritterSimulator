@@ -22,6 +22,8 @@
 
 package assignment5;
 
+import javafx.scene.paint.Color;
+
 public class Runner extends Critter {
     @Override
     /**
@@ -47,6 +49,7 @@ public class Runner extends Critter {
      */
     public boolean fight(String opponent) {
         run(getRandomInt(8));
+        look(dir, false);
         return false;
     }
 
@@ -95,9 +98,19 @@ public class Runner extends Critter {
         return s1 + s2 + s3 + s4 + s5;
     }
 
-	@Override
-	public CritterShape viewShape() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
+    @Override
+    public CritterShape viewShape() {
+        return CritterShape.DIAMOND;
+    }
+
+    @Override
+    public javafx.scene.paint.Color viewColor() {
+        return Color.YELLOW;
+    }
+
+    @Override
+    public javafx.scene.paint.Color viewOutlineColor() {
+        return viewColor();
+    }
 }
