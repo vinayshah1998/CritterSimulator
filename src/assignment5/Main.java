@@ -4,19 +4,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.*;
+import org.reflections.*;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -70,6 +69,52 @@ public class Main extends Application {
 		Label step = new Label("Number of timesteps");
 		Label stats = new Label("Statistics of critters");
 		Label seed = new Label("Random seed number");
+
+		//Drop-down menu to choose a critter to create
+		//TODO: create a text box to choose number of critters to create. If no text, default to 1
+		Reflections reflections = new Reflections(myPackage);
+		Set<Class<? extends Critter>> allClasses = reflections.getSubTypesOf(Critter.class);
+		allClasses.removeIf(e -> e.toString().equals("class assignment5.Critter$TestCritter"));
+
+		ObservableList<String> options = FXCollections.observableArrayList();
+
+		for (Class<? extends Critter> crit : allClasses){
+			options.add(crit.getName().split("\\.")[1]);
+		}
+
+		Collections.sort(options);
+		ChoiceBox<String> critterList = new ChoiceBox<String>(options);
+
+		//set default value
+		critterList.setValue(options.get(0));
+
+		//Textbox to enter number of critters
+		TextField numCrittersBox = new TextField();
+		numCrittersBox.setPromptText("number of critters");
+		numCrittersBox.setOnAction(e -> {
+			try{
+				int critterNum = Integer.parseInt(numCrittersBox.getText());
+				if (critterNum <= 0){
+					throw new NumberFormatException();
+				}
+				for (int i = 0; i < critterNum; i++){
+					Critter.createCritter(critterList.getValue());
+				}
+				Critter.displayWorld(critterGrid);
+				System.out.println(critterNum + " " + critterList.getValue() + "s successfully created");
+			}catch(NumberFormatException ex){
+				Alert invalidCritterNumber = new Alert(Alert.AlertType.ERROR);
+				invalidCritterNumber.setTitle("Error Dialog");
+				invalidCritterNumber.setHeaderText("You typed in an invalid step number!!");
+				invalidCritterNumber.setContentText("Enter in a valid non-negative integer");
+
+				invalidCritterNumber.showAndWait();
+			} catch (Exception e1) {
+				System.out.println("OOps! Don't know what happened here");
+				e1.printStackTrace();
+			}
+		});
+
 
 		//Textbox to enter number of steps
 		TextField stepBox = new TextField();
@@ -140,7 +185,7 @@ public class Main extends Application {
 		});
 
 		optionsPane.setSpacing(8);
-		optionsPane.getChildren().addAll(create, step, stepBox, stats, seed, seedBox, clear, quit);
+		optionsPane.getChildren().addAll(create, critterList, numCrittersBox, step, stepBox, stats, seed, seedBox, clear, quit);
 
 		mainPane.setCenter(critterGrid);
 		mainPane.setLeft(optionsPane);

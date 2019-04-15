@@ -26,6 +26,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
+
 /*
  * See the PDF for descriptions of the methods and fields in this
  * class.
@@ -158,7 +159,7 @@ public abstract class Critter {
         //make borders
         for(int i=0; i<Params.WORLD_WIDTH; i++) {
             for(int j=0; j<Params.WORLD_HEIGHT; j++) {
-            Shape s = new Rectangle(Main.FACTOR,Main.FACTOR);
+            Shape s = new Rectangle(10 + Main.FACTOR,10 + Main.FACTOR);
             s.setFill(null);
             s.setStroke(Color.BLACK);
             ((GridPane) pane).add(s, i, j);
@@ -175,34 +176,20 @@ public abstract class Critter {
     public static Shape getShape(Critter crit){
         switch (crit.viewShape()){
             case CIRCLE:
-                return new Circle(Main.FACTOR/2, crit.viewColor());
+                return new Circle((10 + Main.FACTOR)/2, crit.viewOutlineColor());
             case SQUARE:
-                return new Rectangle(Main.FACTOR, Main.FACTOR, crit.viewColor());
+                return new Rectangle(10 + Main.FACTOR, 10 + Main.FACTOR, crit.viewOutlineColor());
             case STAR:
-                Path star = new Path();
-                star.getElements().addAll(new MoveTo(0, 0),
-                        new LineTo(0, Main.FACTOR),
-                        new LineTo(Main.FACTOR/2, Main.FACTOR/2 * Math.sqrt(3)),
-                        new ClosePath(),
-                        new MoveTo(0, Main.FACTOR),
-                        new LineTo(Main.FACTOR, Main.FACTOR),
-                        new LineTo(Main.FACTOR/2, (Main.FACTOR - Main.FACTOR/2 * Math.sqrt(3))),
-                        new ClosePath());
+                Polygon star = new Polygon(2, 30, 15, 22, 28, 30, 22, 18, 30, 11, 20, 11, 15, 0, 10, 11, 0, 11, 8, 18);
+                star.setFill(crit.viewOutlineColor());
                 return star;
             case DIAMOND:
-                Path diamond = new Path();
-                diamond.getElements().addAll(new MoveTo(Main.FACTOR/2, 0),
-                        new LineTo(0, Main.FACTOR/2),
-                        new LineTo(Main.FACTOR/2, Main.FACTOR),
-                        new LineTo(Main.FACTOR, Main.FACTOR/2),
-                        new ClosePath());
+                Polygon diamond = new Polygon(15, 30, 30, 15, 15, 0, 0, 15);
+                diamond.setFill(crit.viewOutlineColor());
                 return diamond;
             case TRIANGLE:
-                Path triangle = new Path();
-                triangle.getElements().addAll(new MoveTo(0, 0),
-                        new LineTo(0, Main.FACTOR),
-                        new LineTo(Main.FACTOR/2, Main.FACTOR/2 * Math.sqrt(3)),
-                        new ClosePath());
+                Polygon triangle = new Polygon(30, 30, 0, 30, 15, 0);
+                triangle.setFill(crit.viewOutlineColor());
                 return triangle;
             default:
                 return null;

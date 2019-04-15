@@ -19,6 +19,8 @@
 
 package assignment5;
 
+import javafx.scene.paint.Color;
+
 import java.util.ArrayList;
 
 public class Stalker extends Critter{
@@ -87,7 +89,16 @@ public class Stalker extends Critter{
 
 	@Override
 	public CritterShape viewShape() {
-		// TODO Auto-generated method stub
-		return null;
+		return CritterShape.STAR;
 	}
+
+	@Override
+    public javafx.scene.paint.Color viewColor() {
+        return Color.ORANGE;
+    }
+
+    @Override
+    public javafx.scene.paint.Color viewOutlineColor() {
+        return viewColor();
+    }
 }
