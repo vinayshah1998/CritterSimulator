@@ -61,9 +61,9 @@ public class Main extends Application {
 
 
 
-		critterGrid.setGridLinesVisible(true);
-//		critterGrid.setHgap(8);
-//		critterGrid.setVgap(8);
+//		critterGrid.setGridLinesVisible(true);
+		critterGrid.setHgap(8);
+		critterGrid.setVgap(8);
 		critterGrid.setPadding(new Insets(5));
 
 		Label create = new Label("Create critter");
@@ -83,6 +83,7 @@ public class Main extends Application {
 				for (int i = 0; i < stepNum; i++){
 					Critter.worldTimeStep();
 				}
+				Critter.displayWorld(critterGrid);
 				System.out.println("Step number successfully set to: " + stepNum);
 			}catch(NumberFormatException ex){
 				Alert invalidStepNumber = new Alert(Alert.AlertType.ERROR);
@@ -91,6 +92,9 @@ public class Main extends Application {
 				invalidStepNumber.setContentText("Enter in a valid non-negative integer");
 
 				invalidStepNumber.showAndWait();
+			} catch (Exception e1) {
+				System.out.println("OOps! Don't know what happened here");
+				e1.printStackTrace();
 			}
 		});
 
@@ -120,6 +124,12 @@ public class Main extends Application {
 		clear.setOnAction(e -> {
 			System.out.println("Clearing world!");
 			Critter.clearWorld();
+			try {
+				Critter.displayWorld(critterGrid);
+			} catch (Exception e1) {
+				System.out.println("OOps! Don't know what happened here");
+				e1.printStackTrace();
+			}
 		});
 
 		//Quit button

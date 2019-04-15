@@ -152,25 +152,27 @@ public abstract class Critter {
 
 
     public static void displayWorld(Object pane) throws Exception{
+        //clear grid
+        ((GridPane) pane).getChildren().clear();
+
+        //make borders
+        for(int i=0; i<Params.WORLD_WIDTH; i++) {
+            for(int j=0; j<Params.WORLD_HEIGHT; j++) {
+            Shape s = new Rectangle(Main.FACTOR,Main.FACTOR);
+            s.setFill(null);
+            s.setStroke(Color.BLACK);
+            ((GridPane) pane).add(s, i, j);
+            }
+        }
+
         for (Critter crit : world.getPopulation()){
-            Shape s = findShape(crit);
+            Shape s = getShape(crit);
             ((GridPane) pane).add(s, crit.getX_coord(), crit.getY_coord());
         }
 
-
-
-
-//    	for(int i=0; i<Params.WORLD_HEIGHT; i++) {
-//    		for(int j=0; j<Params.WORLD_WIDTH; j++) {
-//    			if(world.getGrid()[i][j] != null){
-//    				Shape s = new Circle(Main.FACTOR/2);
-//    				((GridPane) pane).add(s, j, i);
-//    			}
-//    		}
-//    	}
     }
 
-    public static Shape findShape(Critter crit){
+    public static Shape getShape(Critter crit){
         switch (crit.viewShape()){
             case CIRCLE:
                 return new Circle(Main.FACTOR/2, crit.viewColor());
