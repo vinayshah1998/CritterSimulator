@@ -15,14 +15,10 @@
 package assignment5;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
-import javafx.application.Application;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
@@ -147,8 +143,21 @@ public abstract class Critter {
     }
 
     public static String runStats(List<Critter> critters) {
-        // TODO Implement this method
-        return null;
+        //System.out.print("" + critters.size() + " critters as follows -- ");
+        String s1 = "" + critters.size() + " critters as follows -- ";
+    	java.util.Map<String, Integer> critter_count = new java.util.HashMap<String, Integer>();
+        for (Critter crit : critters) {
+            String crit_string = crit.toString();
+            critter_count.put(crit_string, critter_count.getOrDefault(crit_string, 0) + 1);
+        }
+        String prefix = "";
+        String s2 = "";
+        for (String s : critter_count.keySet()) {
+            //System.out.print(prefix + s + ":" + critter_count.get(s));
+        	s2 = prefix + s + ":" + critter_count.get(s);
+        	prefix = ", ";
+        }
+        return s1+s2;
     }
 
 

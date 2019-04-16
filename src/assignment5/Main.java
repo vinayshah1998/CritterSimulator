@@ -84,6 +84,33 @@ public class Main extends Application {
 		}
 
 		Collections.sort(options);
+		
+		
+		ChoiceBox<String> critterStats = new ChoiceBox<String>(options);
+		//set default value
+		critterStats.setValue(options.get(0));
+		
+		//Textbox to display stats of critter
+		TextField critterStatsBox = new TextField();
+		critterStatsBox.setPromptText("critter stats");
+		critterStats.setOnAction(e -> {
+			try {
+				// Create list of instances of Critter selected
+				List<Critter> instances = new ArrayList<Critter>();
+				instances = Critter.getInstances(critterStats.getValue());		
+				
+				// Output string of stats on text field
+				critterStatsBox.setText(Critter.runStats(instances));
+				
+				System.out.println("Ran stats for critter " + critterStats.getValue());
+			}catch(SecurityException | IllegalArgumentException | InvalidCritterException e2){
+				System.out.println("OOps! Don't know what happened here");
+				e2.printStackTrace();
+			}
+		});
+		
+		
+		
 		ChoiceBox<String> critterList = new ChoiceBox<String>(options);
 
 		//set default value
@@ -103,6 +130,15 @@ public class Main extends Application {
 				}
 				Critter.displayWorld(critterGrid);
 				System.out.println(critterNum + " " + critterList.getValue() + "s successfully created");
+				
+				// UPDATE RUNSTATS:
+				// Create list of instances of Critter selected
+				List<Critter> instances = new ArrayList<Critter>();
+				instances = Critter.getInstances(critterStats.getValue());		
+				
+				// Output string of stats on text field
+				critterStatsBox.setText(Critter.runStats(instances));				
+				System.out.println("Ran stats for critter " + critterStats.getValue());
 			}catch(NumberFormatException ex){
 				Alert invalidCritterNumber = new Alert(Alert.AlertType.ERROR);
 				invalidCritterNumber.setTitle("Error Dialog");
