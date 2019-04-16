@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -69,9 +70,9 @@ public class Main extends Application {
 		Label step = new Label("Number of timesteps");
 		Label stats = new Label("Statistics of critters");
 		Label seed = new Label("Random seed number");
+		Label animateSpeed = new Label("Animation speed");
 
 		//Drop-down menu to choose a critter to create
-		//TODO: create a text box to choose number of critters to create. If no text, default to 1
 		Reflections reflections = new Reflections(myPackage);
 		Set<Class<? extends Critter>> allClasses = reflections.getSubTypesOf(Critter.class);
 		allClasses.removeIf(e -> e.toString().equals("class assignment5.Critter$TestCritter"));
@@ -115,34 +116,6 @@ public class Main extends Application {
 			}
 		});
 
-
-		//Textbox to enter number of steps
-		TextField stepBox = new TextField();
-		stepBox.setPromptText("number of timesteps");
-		stepBox.setOnAction(e -> {
-			try{
-				int stepNum = Integer.parseInt(stepBox.getText());
-				if (stepNum <= 0){
-					throw new NumberFormatException();
-				}
-				for (int i = 0; i < stepNum; i++){
-					Critter.worldTimeStep();
-				}
-				Critter.displayWorld(critterGrid);
-				System.out.println("Step number successfully set to: " + stepNum);
-			}catch(NumberFormatException ex){
-				Alert invalidStepNumber = new Alert(Alert.AlertType.ERROR);
-				invalidStepNumber.setTitle("Error Dialog");
-				invalidStepNumber.setHeaderText("You typed in an invalid step number!!");
-				invalidStepNumber.setContentText("Enter in a valid non-negative integer");
-
-				invalidStepNumber.showAndWait();
-			} catch (Exception e1) {
-				System.out.println("OOps! Don't know what happened here");
-				e1.printStackTrace();
-			}
-		});
-
 		//Textbox to enter seed number
 		TextField seedBox = new TextField();
 		seedBox.setPromptText("seed number");
@@ -163,6 +136,88 @@ public class Main extends Application {
 				invalidSeed.showAndWait();
 			}
 		});
+
+		//Animation stuff
+		TextField animateSpeedBox = new TextField();
+		animateSpeedBox.setPromptText("animation speed");
+//		Button stopAnimation = new Button("Stop");
+
+		TextField stepBox = new TextField();
+
+		AnimationTimer timer = new AnimationTimer() {
+			int numSteps = 0;
+			@Override
+			public void handle(long now) {
+				animateSpeedBox.setDisable(true);
+				numCrittersBox.setDisable(true);
+				stepBox.setDisable(true);
+				seedBox.setDisable(true);
+
+				int speed = 1;
+				try {
+					speed = Integer.valueOf(animateSpeedBox.getText().trim());
+				} catch (Exception e) {
+				}
+
+				if(numSteps == Integer.valueOf(stepBox.getText().trim())){
+					try {
+						Critter.displayWorld(critterGrid);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					numSteps = 0;
+					animateSpeedBox.setDisable(false);
+					numCrittersBox.setDisable(false);
+					stepBox.setDisable(false);
+					seedBox.setDisable(false);
+					stop();
+				} else if (numSteps % speed == 0) {
+					try {
+						Critter.displayWorld(critterGrid);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				Critter.worldTimeStep();
+//				if (statsOn) {
+//					btnRunStats.fire();
+//				}
+				numSteps++;
+			}
+		};
+
+		//Textbox to enter number of steps
+		stepBox.setPromptText("number of timesteps");
+		stepBox.setOnAction(e -> {
+			try{
+				int stepNum = Integer.parseInt(stepBox.getText());
+				if (stepNum <= 0){
+					throw new NumberFormatException();
+				}
+//				for (int i = 0; i < stepNum; i++){
+//					Critter.worldTimeStep();
+//				}
+				timer.start();
+				Critter.displayWorld(critterGrid);
+				System.out.println("Step number successfully set to: " + stepNum);
+			}catch(NumberFormatException ex){
+				Alert invalidStepNumber = new Alert(Alert.AlertType.ERROR);
+				invalidStepNumber.setTitle("Error Dialog");
+				invalidStepNumber.setHeaderText("You typed in an invalid step number!!");
+				invalidStepNumber.setContentText("Enter in a valid non-negative integer");
+
+				invalidStepNumber.showAndWait();
+			} catch (Exception e1) {
+				System.out.println("OOps! Don't know what happened here");
+				e1.printStackTrace();
+			}
+		});
+
+//		stopAnimation.setOnAction(e -> {
+//				timer.stop();
+//		});
+
+
 
 		//Clear button
 		Button clear = new Button("Clear");
@@ -185,7 +240,7 @@ public class Main extends Application {
 		});
 
 		optionsPane.setSpacing(8);
-		optionsPane.getChildren().addAll(create, critterList, numCrittersBox, step, stepBox, stats, seed, seedBox, clear, quit);
+		optionsPane.getChildren().addAll(create, critterList, numCrittersBox, step, stepBox, stats, seed, seedBox, animateSpeed, animateSpeedBox, clear, quit);
 
 		mainPane.setCenter(critterGrid);
 		mainPane.setLeft(optionsPane);
@@ -203,7 +258,7 @@ public class Main extends Application {
 
 
 		stage.setTitle("Critters");
-		stage.setScene(new Scene(mainPane, 500, 500));
+		stage.setScene(new Scene(mainPane, 8*STAGE_WIDTH, 8*STAGE_HEIGHT));
 
         stage.show();
 
