@@ -1,3 +1,17 @@
+/*
+ * CRITTERS Critter.java
+ * EE422C Project 5 submission by
+ * Replace <...> with your actual data.
+ * Vinay Shah
+ * vss452
+ * 16205
+ * Vignesh Ravi
+ * vgr325
+ * 16225
+ * Slip days used: <0>
+ * Spring 2019
+ */
+
 package assignment5;
 
 import java.io.ByteArrayOutputStream;
@@ -7,9 +21,15 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import org.reflections.*;
 
 import javafx.application.Application;
@@ -91,7 +111,37 @@ public class Main extends Application {
 		critterStats.setValue(options.get(0));
 		
 		//Textbox to display stats of critter
+//		TextArea text = new TextArea();
+//		text.setWrapText(true);
+//		text.setText("blahhhhh");
+//		text.setEditable(false);
+//		text.setMinWidth(50);
+//		text.setPrefWidth(50);
+//		text.setMaxWidth(400);
+//// add listner
+//		text.textProperty().addListener(new ChangeListener<String>() {
+//			@Override
+//			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+//				text.setPrefWidth(text.getText().length() * 7); // why 7? Totally trial number.
+//			}
+//		});
+
+
+
+
+
 		TextField critterStatsBox = new TextField();
+		critterStatsBox.setMinWidth(50);
+		critterStatsBox.setPrefWidth(50);
+		critterStatsBox.setMaxWidth(400);
+		critterStatsBox.setEditable(false);
+// add listner
+		critterStatsBox.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				critterStatsBox.setPrefWidth(critterStatsBox.getText().length() * 7); // why 7? Totally trial number.
+			}
+		});
 		critterStatsBox.setPromptText("critter stats");
 		critterStats.setOnAction(e -> {
 			try {
@@ -102,7 +152,7 @@ public class Main extends Application {
 				// Output string of stats on text field
 				critterStatsBox.setText(Critter.runStats(instances));
 				
-				System.out.println("Ran stats for critter " + critterStats.getValue());
+				System.out.println("Run stats for critter " + critterStats.getValue());
 			}catch(SecurityException | IllegalArgumentException | InvalidCritterException e2){
 				System.out.println("OOps! Don't know what happened here");
 				e2.printStackTrace();
@@ -138,12 +188,12 @@ public class Main extends Application {
 				
 				// Output string of stats on text field
 				critterStatsBox.setText(Critter.runStats(instances));				
-				System.out.println("Ran stats for critter " + critterStats.getValue());
+				System.out.println("Run stats for critter " + critterStats.getValue());
 			}catch(NumberFormatException ex){
 				Alert invalidCritterNumber = new Alert(Alert.AlertType.ERROR);
 				invalidCritterNumber.setTitle("Error Dialog");
 				invalidCritterNumber.setHeaderText("You typed in an invalid step number!!");
-				invalidCritterNumber.setContentText("Enter in a valid non-negative integer");
+				invalidCritterNumber.setContentText("Enter in a valid positive integer");
 
 				invalidCritterNumber.showAndWait();
 			} catch (Exception e1) {
@@ -151,6 +201,28 @@ public class Main extends Application {
 				e1.printStackTrace();
 			}
 		});
+
+
+		//Clear button
+		Button clear = new Button("Clear");
+		clear.setOnAction(e -> {
+			System.out.println("Clearing world!");
+			Critter.clearWorld();
+			try {
+				Critter.displayWorld(critterGrid);
+			} catch (Exception e1) {
+				System.out.println("OOps! Don't know what happened here");
+				e1.printStackTrace();
+			}
+		});
+
+		//Quit button
+		Button quit = new Button("Quit");
+		quit.setOnAction(e -> {
+			System.out.println("Ta-ta!");
+			stage.close();
+		});
+
 
 		//Textbox to enter seed number
 		TextField seedBox = new TextField();
@@ -188,11 +260,28 @@ public class Main extends Application {
 				numCrittersBox.setDisable(true);
 				stepBox.setDisable(true);
 				seedBox.setDisable(true);
+				clear.setDisable(true);
 
 				int speed = 1;
 				try {
-					speed = Integer.valueOf(animateSpeedBox.getText().trim());
+					speed = Integer.parseInt(animateSpeedBox.getText());
+					if (speed <= 0){
+						throw new NumberFormatException();
+					}
 				} catch (Exception e) {
+					numSteps = 0;
+					animateSpeedBox.setDisable(false);
+					numCrittersBox.setDisable(false);
+					stepBox.setDisable(false);
+					seedBox.setDisable(false);
+					clear.setDisable(false);
+					stop();
+					Alert invalidSpeed = new Alert(Alert.AlertType.ERROR);
+					invalidSpeed.setTitle("Error Dialog");
+					invalidSpeed.setHeaderText("You typed in an invalid animation speed!!");
+					invalidSpeed.setContentText("Enter in a valid positive integer");
+					Platform.runLater(invalidSpeed::showAndWait);
+//					invalidSpeed.showAndWait();
 				}
 
 				if(numSteps == Integer.valueOf(stepBox.getText().trim())){
@@ -206,6 +295,7 @@ public class Main extends Application {
 					numCrittersBox.setDisable(false);
 					stepBox.setDisable(false);
 					seedBox.setDisable(false);
+					clear.setDisable(false);
 					stop();
 				} else if (numSteps % speed == 0) {
 					try {
@@ -234,7 +324,7 @@ public class Main extends Application {
 //					Critter.worldTimeStep();
 //				}
 				timer.start();
-				Critter.displayWorld(critterGrid);
+//				Critter.displayWorld(critterGrid);
 				System.out.println("Step number successfully set to: " + stepNum);
 			}catch(NumberFormatException ex){
 				Alert invalidStepNumber = new Alert(Alert.AlertType.ERROR);
@@ -255,28 +345,10 @@ public class Main extends Application {
 
 
 
-		//Clear button
-		Button clear = new Button("Clear");
-		clear.setOnAction(e -> {
-			System.out.println("Clearing world!");
-			Critter.clearWorld();
-			try {
-				Critter.displayWorld(critterGrid);
-			} catch (Exception e1) {
-				System.out.println("OOps! Don't know what happened here");
-				e1.printStackTrace();
-			}
-		});
 
-		//Quit button
-		Button quit = new Button("Quit");
-		quit.setOnAction(e -> {
-			System.out.println("Ta-ta!");
-			stage.close();
-		});
 
 		optionsPane.setSpacing(8);
-		optionsPane.getChildren().addAll(create, critterList, numCrittersBox, step, stepBox, stats, seed, seedBox, animateSpeed, animateSpeedBox, clear, quit);
+		optionsPane.getChildren().addAll(create, critterList, numCrittersBox, step, stepBox, stats, critterStats, critterStatsBox, seed, seedBox, animateSpeed, animateSpeedBox, clear, quit);
 
 		mainPane.setCenter(critterGrid);
 		mainPane.setLeft(optionsPane);
